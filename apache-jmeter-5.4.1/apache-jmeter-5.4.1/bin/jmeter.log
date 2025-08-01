@@ -1,21 +1,24 @@
-2025-07-31 23:29:28,572 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
-2025-07-31 23:29:28,603 INFO o.a.j.JMeter: Loading user properties from: user.properties
-2025-07-31 23:29:28,603 INFO o.a.j.JMeter: Loading system properties from: system.properties
-2025-07-31 23:29:28,619 INFO o.a.j.JMeter: Copyright (c) 1998-2021 The Apache Software Foundation
-2025-07-31 23:29:28,619 INFO o.a.j.JMeter: Version 5.4.1
-2025-07-31 23:29:28,619 INFO o.a.j.JMeter: java.version=11.0.28
-2025-07-31 23:29:28,619 INFO o.a.j.JMeter: java.vm.name=OpenJDK 64-Bit Server VM
-2025-07-31 23:29:28,619 INFO o.a.j.JMeter: os.name=Windows 11
-2025-07-31 23:29:28,619 INFO o.a.j.JMeter: os.arch=amd64
-2025-07-31 23:29:28,619 INFO o.a.j.JMeter: os.version=10.0
-2025-07-31 23:29:28,619 INFO o.a.j.JMeter: file.encoding=Cp1252
-2025-07-31 23:29:28,619 INFO o.a.j.JMeter: java.awt.headless=null
-2025-07-31 23:29:28,619 INFO o.a.j.JMeter: Max memory     =1073741824
-2025-07-31 23:29:28,619 INFO o.a.j.JMeter: Available Processors =8
-2025-07-31 23:29:28,639 INFO o.a.j.JMeter: Default Locale=English (EN)
-2025-07-31 23:29:28,639 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
-2025-07-31 23:29:28,639 INFO o.a.j.JMeter: JMeterHome=C:\JMeter\apache-jmeter-5.4.1\apache-jmeter-5.4.1
-2025-07-31 23:29:28,639 INFO o.a.j.JMeter: user.dir  =C:\JMeter\apache-jmeter-5.4.1\apache-jmeter-5.4.1\bin
-2025-07-31 23:29:28,639 INFO o.a.j.JMeter: PWD       =C:\JMeter\apache-jmeter-5.4.1\apache-jmeter-5.4.1\bin
-2025-07-31 23:29:28,642 INFO o.a.j.JMeter: IP: 192.168.1.5 Name: EQPL0924P13 FullName: EQPL0924P13
-2025-07-31 23:29:28,837 INFO o.a.j.JMeter: Setting LAF to: com.github.weisj.darklaf.DarkLaf:com.github.weisj.darklaf.theme.DarculaTheme
+2025-08-01 09:13:39,038 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
+2025-08-01 09:13:39,088 INFO o.a.j.JMeter: Loading user properties from: user.properties
+2025-08-01 09:13:39,091 INFO o.a.j.JMeter: Loading system properties from: system.properties
+2025-08-01 09:13:39,116 INFO o.a.j.JMeter: Copyright (c) 1998-2021 The Apache Software Foundation
+2025-08-01 09:13:39,116 INFO o.a.j.JMeter: Version 5.4.1
+2025-08-01 09:13:39,116 INFO o.a.j.JMeter: java.version=11.0.28
+2025-08-01 09:13:39,116 INFO o.a.j.JMeter: java.vm.name=OpenJDK 64-Bit Server VM
+2025-08-01 09:13:39,116 INFO o.a.j.JMeter: os.name=Windows 11
+2025-08-01 09:13:39,116 INFO o.a.j.JMeter: os.arch=amd64
+2025-08-01 09:13:39,116 INFO o.a.j.JMeter: os.version=10.0
+2025-08-01 09:13:39,116 INFO o.a.j.JMeter: file.encoding=Cp1252
+2025-08-01 09:13:39,116 INFO o.a.j.JMeter: java.awt.headless=null
+2025-08-01 09:13:39,119 INFO o.a.j.JMeter: Max memory     =2147483648
+2025-08-01 09:13:39,119 INFO o.a.j.JMeter: Available Processors =8
+2025-08-01 09:13:39,149 INFO o.a.j.JMeter: Default Locale=English (EN)
+2025-08-01 09:13:39,151 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
+2025-08-01 09:13:39,151 INFO o.a.j.JMeter: JMeterHome=C:\JMeter\apache-jmeter-5.4.1\apache-jmeter-5.4.1
+2025-08-01 09:13:39,152 INFO o.a.j.JMeter: user.dir  =C:\JMeter\apache-jmeter-5.4.1\apache-jmeter-5.4.1\bin
+2025-08-01 09:13:39,152 INFO o.a.j.JMeter: PWD       =C:\JMeter\apache-jmeter-5.4.1\apache-jmeter-5.4.1\bin
+2025-08-01 09:13:39,159 INFO o.a.j.JMeter: IP: 192.168.1.5 Name: EQPL0924P13 FullName: EQPL0924P13
+2025-08-01 09:13:39,500 INFO o.a.j.JMeter: Setting LAF to: com.github.weisj.darklaf.DarkLaf:com.github.weisj.darklaf.theme.SolarizedLightTheme
+2025-08-01 09:13:41,141 INFO o.a.j.JMeter: Loaded icon properties from org/apache/jmeter/images/icon.properties
+2025-08-01 09:13:51,782 INFO o.j.r.JARSourceHTTP: Found cached repo
+2025-08-01 09:13:52,544 INFO o.j.r.PluginManager: Plugins Status: [jpgc-plugins-manager=1.11, jpgc-webdriver=4.13.0.2, jmeter-core=5.4.1, jmeter-ftp=5.4.1, jmeter-http=5.4.1, jmeter-jdbc=5.4.1, jmeter-jms=5.4.1, jmeter-junit=5.4.1, jmeter-java=5.4.1, jmeter-ldap=5.4.1, jmeter-mail=5.4.1, jmeter-mongodb=5.4.1, jmeter-native=5.4.1, jmeter-tcp=5.4.1, jmeter-components=5.4.1]

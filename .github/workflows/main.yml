@@ -1,45 +1,49 @@
-name: JMeter Test Execution
+name: Run JMeter Tests
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
+  pull_request:
 
 jobs:
-  run-jmeter:
+  jmeter-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
-      - name: ☕ Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
 
-      - name: ⬇️ Download and set up JMeter
-        run: |
-          mkdir jmeter
-          wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz
-          tar -xzf apache-jmeter-5.6.3.tgz -C jmeter --strip-components=1
+    - name: Download and Extract JMeter
+      run: |
+        curl -L https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz -o jmeter.tgz
+        tar -xzf jmeter.tgz
+        mv apache-jmeter-5.6.3 jmeter
 
-      - name: ⬇️ Download Selenium WebDriver JARs
-        run: |
-          mkdir -p jmeter/lib/ext
-          wget -O selenium.zip https://github.com/SeleniumHQ/selenium/releases/download/selenium-3.141.59/selenium-java-3.141.59.zip
-          unzip selenium.zip -d selenium_libs
-          cp selenium_libs/client-combined-3.141.59.jar jmeter/lib/ext/
-          cp selenium_libs/libs/*.jar jmeter/lib/ext/
+    - name: Install JMeter Plugins
+      run: |
+        curl -L https://jmeter-plugins.org/get/ | bash
+        mkdir -p ~/.jmeter
+        cp -r jmeter/lib ~/.jmeter/
 
-      - name: 🚀 Run JMeter Test Plan
-        run: |
-          mkdir -p reports
-          ./jmeter/bin/jmeter -n -t tests/TestPlan.jmx -l reports/results.jtl -j reports/jmeter.log
+    - name: Run JMeter Test Plan (Headless WebDriver)
+      run: |
+        mkdir -p reports
+        ./jmeter/bin/jmeter -n \
+          -t tests/TestPlan.jmx \
+          -l reports/results.jtl \
+          -j reports/jmeter.log
+      env:
+        JVM_ARGS: "-Djmeter.webdriver.chrome.driver.args=--headless --disable-gpu --no-sandbox --disable-dev-shm-usage"
 
-      - name: 📤 Upload JMeter Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: jmeter-results
-          path: reports/
+    - name: Upload JMeter Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: jmeter-results
+        path: reports/

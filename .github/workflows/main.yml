@@ -1,17 +1,16 @@
-name: Run JMeter WebDriver Test Plan
+name: 🧪 Run JMeter with WebDriver in GitHub Actions
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   jmeter-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout repository
+      - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
 
       - name: ☕ Set up Java 17
@@ -20,32 +19,23 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: 📦 Download and Setup JMeter
+      - name: ⬇️ Download JMeter
         run: |
-          curl -L https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz -o jmeter.tgz
-          tar -xzf jmeter.tgz
+          wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz
+          tar -xzf apache-jmeter-5.6.3.tgz
           mv apache-jmeter-5.6.3 jmeter
 
-      - name: 🔌 Add WebDriver Plugin and Selenium JAR
+      - name: ⬇️ Download Selenium WebDriver JARs
         run: |
           mkdir -p jmeter/lib/ext
-          mkdir -p jmeter/lib
+          wget -O selenium.zip https://github.com/SeleniumHQ/selenium/releases/download/selenium-3.141.59/selenium-java-3.141.59.zip
+          unzip selenium.zip -d selenium_libs
+          cp selenium_libs/selenium-java-3.141.59/*.jar jmeter/lib/ext/
+          cp selenium_libs/selenium-java-3.141.59/libs/*.jar jmeter/lib/ext/
 
-          # WebDriver plugin
-          curl -L -o jmeter/lib/ext/jmeter-plugins-webdriver-2.0.jar \
-            https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-webdriver/2.0/jmeter-plugins-webdriver-2.0.jar
+      - name: 📁 Create reports folder
+        run: mkdir -p reports
 
-          # Add selenium-server-standalone (all-in-one jar)
-          curl -L -o jmeter/lib/selenium-server-standalone.jar \
-            https://selenium-release.storage.googleapis.com/3.141/selenium-server-standalone-3.141.59.jar
-
-      - name: ▶️ Run JMeter Test Plan
+      - name: 🧪 Run JMeter Test
         run: |
-          mkdir -p reports
           ./jmeter/bin/jmeter -n -t tests/TestPlan.jmx -l reports/results.jtl -j reports/jmeter.log
-
-      - name: 📤 Upload Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: jmeter-results
-          path: reports/

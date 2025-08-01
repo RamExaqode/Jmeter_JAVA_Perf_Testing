@@ -10,11 +10,6 @@ jobs:
   jmeter-test:
     runs-on: ubuntu-latest
 
-    env:
-      JMETER_VERSION: 5.6.3
-      JMETER_HOME: ./jmeter
-      JAVA_HOME: ${{ env.JAVA_HOME_11_X64 }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,8 +22,8 @@ jobs:
 
       - name: Download and Extract JMeter
         run: |
+          JMETER_VERSION=5.6.3
           curl -L https://dlcdn.apache.org/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz -o jmeter.tgz
-          rm -rf apache-jmeter-*
           tar -xzf jmeter.tgz
           JMETER_DIR=$(find . -maxdepth 1 -type d -name "apache-jmeter-*")
           echo "Extracted folder: $JMETER_DIR"
@@ -39,14 +34,9 @@ jobs:
           mv "$JMETER_DIR" jmeter
           chmod +x jmeter/bin/jmeter
 
-      # Optional: Install WebDriver plugin if you are using it
-      # - name: Install WebDriver Plugin
-      #   run: |
-      #     ./jmeter/bin/PluginsManagerCMD.sh install jpgc-webdriver
-
       - name: Run JMeter Test Plan
         run: |
-          ./jmeter/bin/jmeter -n -t "C:/JMeter/tests/TestPlan.jmx" -l results/results.jtl -e -o results/report
+          ./jmeter/bin/jmeter -n -t "./tests/TestPlan.jmx" -l results/results.jtl -e -o results/report
 
       - name: Upload JMeter Results
         uses: actions/upload-artifact@v4

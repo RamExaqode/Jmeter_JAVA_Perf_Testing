@@ -1,9 +1,8 @@
-name: JMeter Tests
+name: JMeter Performance Test
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -11,35 +10,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Download JMeter
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Download and Extract JMeter
         run: |
-          curl -O https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.4.1.tgz
-          tar -xzf apache-jmeter-5.4.1.tgz
+          curl -L -o jmeter.tgz https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.4.1.tgz
+          tar -xzf jmeter.tgz
           mv apache-jmeter-5.4.1 jmeter
 
       - name: Install JMeter WebDriver Plugin & Dependencies
         run: |
           mkdir -p jmeter/lib/ext
-          mkdir -p jmeter/lib/junit
+          mkdir -p jmeter/lib
 
           # WebDriver plugin
-          curl -L -o jmeter/lib/ext/jmeter-plugins-webdriver.jar https://jmeter-plugins.org/downloads/file/JMeterPlugins-WebDriver-1.5.0.jar
+          curl -L -o webdriver.zip https://jmeter-plugins.org/files/packages/jpgc-webdriver-1.5.0.zip
+          unzip -q webdriver.zip -d jmeter/lib/ext/
 
-          # Selenium (required by WebDriver plugin)
-          curl -L -o jmeter/lib/junit/selenium-java-3.141.59.zip https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-java/3.141.59/selenium-java-3.141.59.zip
-          unzip -q jmeter/lib/junit/selenium-java-3.141.59.zip -d jmeter/lib/junit
-          find jmeter/lib/junit -name "*.jar" -exec cp {} jmeter/lib/ \;
+          # Selenium and WebDriver dependencies
+          curl -L -o jmeter/lib/selenium-java-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-java/3.141.59/selenium-java-3.141.59.jar
+          curl -L -o jmeter/lib/selenium-api-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-api/3.141.59/selenium-api-3.141.59.jar
+          curl -L -o jmeter/lib/selenium-support-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-support/3.141.59/selenium-support-3.141.59.jar
+          curl -L -o jmeter/lib/selenium-chrome-driver-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-chrome-driver/3.141.59/selenium-chrome-driver-3.141.59.jar
+          curl -L -o jmeter/lib/selenium-remote-driver-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-remote-driver/3.141.59/selenium-remote-driver-3.141.59.jar
+          curl -L -o jmeter/lib/selenium-server-standalone-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-server-standalone/3.141.59/selenium-server-standalone-3.141.59.jar
 
-      - name: Run JMeter Test Plan
+      - name: Run JMeter Test
         run: |
           mkdir -p reports
           ./jmeter/bin/jmeter -n -t tests/TestPlan.jmx -l reports/results.jtl -j reports/jmeter.log
 
-      - name: Upload JMeter Reports
+      - name: Upload JMeter Results
         uses: actions/upload-artifact@v4
         with:
-          name: jmeter-reports
-          path: reports
+          name: jmeter-results
+          path: reports/

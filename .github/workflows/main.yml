@@ -33,8 +33,8 @@ jobs:
     # Step 4: Run JMeter Test Plan (.jmx)
     - name: Run JMeter Test
       run: |
-        mkdir -p reports
-        ./jmeter/bin/jmeter -n -t tests/TestPlan.jmx -l reports/results.jtl -j reports/jmeter.log
+       jmeter -n -t Jmeter_JAVA_Perf_Testing/tests/Orange\ HRM.jmx -l reports/result.jtl
+
 
     # Step 5: List Report Files for Debugging
     - name: List all reports

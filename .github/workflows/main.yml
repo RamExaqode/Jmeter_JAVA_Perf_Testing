@@ -1,4 +1,4 @@
-name: Run JMeter Test Plan with WebDriver
+name: Run JMeter WebDriver Test Plan
 
 on:
   push:
@@ -20,22 +20,22 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: 📦 Download and Extract JMeter
+      - name: 📦 Download and Setup JMeter
         run: |
           curl -L https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz -o jmeter.tgz
           tar -xzf jmeter.tgz
           mv apache-jmeter-5.6.3 jmeter
 
-      - name: 🔌 Add WebDriver Plugin and Selenium (All-in-One JAR)
+      - name: 🔌 Add WebDriver Plugin and Selenium JAR
         run: |
           mkdir -p jmeter/lib/ext
           mkdir -p jmeter/lib
 
-          # Download WebDriver Plugin
-          curl -L -o jmeter/lib/ext/jpgc-webdriver-2.0.jar \
+          # WebDriver plugin
+          curl -L -o jmeter/lib/ext/jmeter-plugins-webdriver-2.0.jar \
             https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-webdriver/2.0/jmeter-plugins-webdriver-2.0.jar
 
-          # Download Selenium Standalone (includes all dependencies)
+          # Add selenium-server-standalone (all-in-one jar)
           curl -L -o jmeter/lib/selenium-server-standalone.jar \
             https://selenium-release.storage.googleapis.com/3.141/selenium-server-standalone-3.141.59.jar
 
@@ -44,7 +44,7 @@ jobs:
           mkdir -p reports
           ./jmeter/bin/jmeter -n -t tests/TestPlan.jmx -l reports/results.jtl -j reports/jmeter.log
 
-      - name: 📤 Upload JMeter Results
+      - name: 📤 Upload Results
         uses: actions/upload-artifact@v4
         with:
           name: jmeter-results

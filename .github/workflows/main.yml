@@ -1,0 +1,79 @@
+name: JMeter Performance Test
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  jmeter-test:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout code
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Step 2: Set up Java (required by JMeter)
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    # Step 3: Download & Extract Apache JMeter
+    - name: Download & Extract JMeter
+      run: |
+        curl -O https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.4.1.tgz
+        tar -xzf apache-jmeter-5.4.1.tgz
+        mv apache-jmeter-5.4.1 jmeter
+
+    # Step 4: Run JMeter Test Plan (.jmx)
+    - name: Run JMeter Test
+      run: |
+        mkdir -p reports
+        ./jmeter/bin/jmeter -n -t tests/TestPlan.jmx -l reports/results.jtl -j reports/jmeter.log
+
+    # Step 5: List Report Files for Debugging
+    - name: List all reports
+      run: ls -R reports
+
+    # Step 6: Upload Report Files as Artifacts
+    - name: Upload JMeter CSV Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: jmeter-csv-reports
+        path: |
+          reports/results.jtl
+          reports/summary.csv
+          reports/aggregate.csv
+
+    # Step 7: Send Email with CSV Reports
+    - name: Send JMeter CSV Reports via Email
+      if: always()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.GMAIL_USERNAME }}
+        password: ${{ secrets.GMAIL_APP_PASSWORD }}
+        from: 'ram.marshivane@exaqode.com'
+        to: 'rammarshivane@gmail.com,ram.marshivane@exaqode.com'
+        subject: 'JMeter Test Execution Report (CSV)'
+        body: |
+          Hi Team,
+
+          Please find attached the following JMeter test execution reports:
+          - View Results Tree: results.jtl
+          - Summary Report: summary.csv
+          - Aggregate Report: aggregate.csv
+
+          Regards,
+          GitHub Actions Bot
+        attachments: |
+          ${GITHUB_WORKSPACE}/reports/results.jtl
+          ${GITHUB_WORKSPACE}/reports/summary.csv
+          ${GITHUB_WORKSPACE}/reports/aggregate.csv

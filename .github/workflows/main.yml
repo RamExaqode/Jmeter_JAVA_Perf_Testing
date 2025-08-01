@@ -1,4 +1,4 @@
-name: Run JMeter Performance Tests
+name: Run JMeter Test
 
 on:
   push:
@@ -7,43 +7,49 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-jmeter-tests:
+  jmeter-test:
     runs-on: ubuntu-latest
 
     env:
-      JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/11.0.28-6/x64
-      JAVA_HOME_11_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/11.0.28-6/x64
+      JMETER_VERSION: 5.6.3
+      JMETER_HOME: ./jmeter
+      JAVA_HOME: ${{ env.JAVA_HOME_11_X64 }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
 
       - name: Download and Extract JMeter
         run: |
-          curl -L https://dlcdn.apache.org/jmeter/binaries/apache-jmeter-5.6.3.tgz -o jmeter.tgz
+          curl -L https://dlcdn.apache.org/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz -o jmeter.tgz
+          rm -rf apache-jmeter-*
           tar -xzf jmeter.tgz
-          JMETER_DIR=$(find . -maxdepth 1 -type d -name "apache-jmeter-*" | head -n 1)
+          JMETER_DIR=$(find . -maxdepth 1 -type d -name "apache-jmeter-*")
           echo "Extracted folder: $JMETER_DIR"
+          if [ ! -d "$JMETER_DIR/bin" ]; then
+            echo "ERROR: JMeter bin directory not found"
+            exit 1
+          fi
           mv "$JMETER_DIR" jmeter
-          ls jmeter/bin
-          if [ -f jmeter/bin/jmeter ]; then chmod +x jmeter/bin/jmeter; else echo "jmeter not found"; exit 1; fi
+          chmod +x jmeter/bin/jmeter
 
-      - name: Install Plugin Manager & WebDriver Plugin
+      # Optional: Install WebDriver plugin if you are using it
+      # - name: Install WebDriver Plugin
+      #   run: |
+      #     ./jmeter/bin/PluginsManagerCMD.sh install jpgc-webdriver
+
+      - name: Run JMeter Test Plan
         run: |
-          mkdir -p jmeter/lib/ext
-          curl -L https://jmeter-plugins.org/files/packages/jpgc-cmdrunner-2.3.jar -o jmeter/lib/ext/jpgc-cmdrunner-2.3.jar
-          curl -L https://jmeter-plugins.org/files/packages/jpgc-pluginmanager-1.7.jar -o jmeter/lib/ext/jpgc-pluginmanager-1.7.jar
-          java -cp jmeter/lib/ext/jpgc-cmdrunner-2.3.jar org.jmeterplugins.repository.PluginManagerCMDInstaller
-          chmod +x jmeter/bin/PluginsManagerCMD.sh
-          jmeter/bin/PluginsManagerCMD.sh install jpgc-webdriver
+          ./jmeter/bin/jmeter -n -t "C:/JMeter/tests/TestPlan.jmx" -l results/results.jtl -e -o results/report
 
-      - name: Run JMeter Test (headless mode)
-        run: |
-          mkdir -p reports
-          jmeter/bin/jmeter -n -t "C:/JMeter/tests/TestPlan.jmx" -l reports/results.jtl -e -o reports/html
-
-      - name: Upload HTML Report
+      - name: Upload JMeter Results
         uses: actions/upload-artifact@v4
         with:
-          name: jmeter-html-report
-          path: reports/html
+          name: jmeter-results
+          path: results/

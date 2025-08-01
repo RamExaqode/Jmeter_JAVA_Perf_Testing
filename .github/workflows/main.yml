@@ -1,16 +1,16 @@
-name: 🧪 Run JMeter with WebDriver in GitHub Actions
+name: JMeter Test Execution
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  jmeter-test:
+  run-jmeter:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⬇️ Checkout repo
+      - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
       - name: ☕ Set up Java 17
@@ -19,23 +19,27 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: ⬇️ Download JMeter
+      - name: ⬇️ Download and set up JMeter
         run: |
-          wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz
-          tar -xzf apache-jmeter-5.6.3.tgz
-          mv apache-jmeter-5.6.3 jmeter
+          mkdir jmeter
+          wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz
+          tar -xzf apache-jmeter-5.6.3.tgz -C jmeter --strip-components=1
 
       - name: ⬇️ Download Selenium WebDriver JARs
         run: |
           mkdir -p jmeter/lib/ext
           wget -O selenium.zip https://github.com/SeleniumHQ/selenium/releases/download/selenium-3.141.59/selenium-java-3.141.59.zip
           unzip selenium.zip -d selenium_libs
-          cp selenium_libs/selenium-java-3.141.59/*.jar jmeter/lib/ext/
-          cp selenium_libs/selenium-java-3.141.59/libs/*.jar jmeter/lib/ext/
+          cp selenium_libs/client-combined-3.141.59.jar jmeter/lib/ext/
+          cp selenium_libs/libs/*.jar jmeter/lib/ext/
 
-      - name: 📁 Create reports folder
-        run: mkdir -p reports
-
-      - name: 🧪 Run JMeter Test
+      - name: 🚀 Run JMeter Test Plan
         run: |
+          mkdir -p reports
           ./jmeter/bin/jmeter -n -t tests/TestPlan.jmx -l reports/results.jtl -j reports/jmeter.log
+
+      - name: 📤 Upload JMeter Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-results
+          path: reports/

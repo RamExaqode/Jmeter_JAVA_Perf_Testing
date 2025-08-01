@@ -12,32 +12,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    # Step 1: Checkout code
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+    # Step 2: Set up Java (required by JMeter)
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
-      - name: Download & Extract JMeter
-        run: |
-          curl -O https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.4.1.tgz
-          tar -xzf apache-jmeter-5.4.1.tgz
-          mv apache-jmeter-5.4.1 jmeter
+    # Step 3: Download & Extract Apache JMeter
+    - name: Download & Extract JMeter
+      run: |
+        curl -O https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.4.1.tgz
+        tar -xzf apache-jmeter-5.4.1.tgz
+        mv apache-jmeter-5.4.1 jmeter
 
-      - name: Run JMeter Test
-        run: |
-          mkdir -p reports
-          ./jmeter/bin/jmeter -n -t tests/Orange\ HRM.jmx -l reports/results.jtl -j reports/jmeter.log
+    # Step 4: Run JMeter Test Plan (.jmx)
+    - name: Run JMeter Test
+      run: |
+        mkdir -p reports
+        ./jmeter/bin/jmeter -n -t tests/TestPlan.jmx -l reports/results.jtl -j reports/jmeter.log
 
-      - name: List all reports
-        run: ls -R reports
+    # Step 5: List Report Files for Debugging
+    - name: List all reports
+      run: ls -R reports
 
-      - name: Upload JMeter Reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jmeter-reports
-          path: reports/
+    # Step 6: Upload Report Files as Artifacts
+    - name: Upload JMeter Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: jmeter-reports
+        path: reports/

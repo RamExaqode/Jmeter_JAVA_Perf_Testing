@@ -1,54 +1,77 @@
-name: Run JMeter Tests
+name: JMeter Performance Tests
 
 on:
   push:
-    branches: [main]
-  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  jmeter-test:
+  run-jmeter-tests:
     runs-on: ubuntu-latest
 
+    env:
+      JAVA_HOME_11_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/11.0.28-6/x64
+      JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/11.0.28-6/x64
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '11'
+      - name: Set up Java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
 
-    - name: Download and Setup JMeter 5.6.3
-      run: |
-        curl -L https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz -o jmeter.tgz
-        tar -xzf jmeter.tgz
-        mv apache-jmeter-5.6.3 jmeter
+      - name: Download and Extract JMeter
+        run: |
+          curl -L https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz -o jmeter.tgz
+          tar -xzf jmeter.tgz
+          mv apache-jmeter-* jmeter
+          chmod +x jmeter/bin/jmeter
 
-    - name: Install Plugin Manager and WebDriver plugin
-      run: |
-        mkdir -p jmeter/lib/ext
-        curl -L https://jmeter-plugins.org/files/packages/jpgc-cmdrunner-2.3.jar -o jmeter/lib/ext/jpgc-cmdrunner-2.3.jar
-        curl -L https://jmeter-plugins.org/files/packages/jpgc-pluginmanager-1.7.jar -o jmeter/lib/ext/jpgc-pluginmanager-1.7.jar
+      - name: Install Plugin Manager and WebDriver plugin
+        run: |
+          mkdir -p jmeter/lib/ext jmeter/bin
 
-        chmod +x jmeter/bin/PluginsManagerCMD.sh
+          # Download required plugin JARs
+          curl -L https://jmeter-plugins.org/files/packages/jpgc-cmdrunner-2.3.jar -o jmeter/lib/ext/jpgc-cmdrunner-2.3.jar
+          curl -L https://jmeter-plugins.org/files/packages/jpgc-pluginmanager-1.7.jar -o jmeter/lib/ext/jpgc-pluginmanager-1.7.jar
 
-        # Install WebDriver plugin
-        jmeter/bin/PluginsManagerCMD.sh install jpgc-webdriver
-        ls -l jmeter/lib/ext
+          # Create PluginsManagerCMD.sh manually
+          cat << 'EOF' > jmeter/bin/PluginsManagerCMD.sh
+          #!/bin/bash
+          java -cp "$(dirname "$0")/../lib/ext/jpgc-cmdrunner-2.3.jar:$(dirname "$0")/../lib/ext/*" org.jmeterplugins.repository.PluginManagerCMD "$@"
+          EOF
 
-    - name: Run JMeter Test (Headless)
-      run: |
-        mkdir -p reports
-        ./jmeter/bin/jmeter -n \
-          -t tests/TestPlan.jmx \
-          -l reports/results.jtl \
-          -j reports/jmeter.log
-      env:
-        JVM_ARGS: "-Djmeter.webdriver.chrome.driver.args=--headless --disable-gpu --no-sandbox --disable-dev-shm-usage"
+          chmod +x jmeter/bin/PluginsManagerCMD.sh
 
-    - name: Upload Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: jmeter-results
-        path: reports/
+          # Install WebDriver plugin
+          jmeter/bin/PluginsManagerCMD.sh install jpgc-webdriver
+
+      - name: Install Chrome for WebDriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Download and Setup ChromeDriver
+        run: |
+          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
+          CHROMEDRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json" | jq -r '.channels.Stable.version')
+          URL=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json" | jq -r ".channels.Stable.downloads.chromedriver[] | select(.platform == \"linux64\") | .url")
+          curl -Lo chromedriver.zip "$URL"
+          unzip chromedriver.zip
+          sudo mv chromedriver /usr/local/bin/
+          chromedriver --version
+
+      - name: Run JMeter Tests (Headless)
+        run: |
+          mkdir -p reports
+          jmeter/bin/jmeter -n -t "C:/JMeter/tests/TestPlan.jmx" -l reports/results.jtl -j reports/jmeter.log -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver -Dchrome.options="--headless,--disable-gpu"
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-results
+          path: reports/

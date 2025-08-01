@@ -1,17 +1,16 @@
-name: Run JMeter Performance Tests
+name: Run JMeter Tests
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   jmeter-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Java 17
@@ -20,26 +19,21 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Download and Install JMeter
+      - name: Download and Unpack JMeter
         run: |
-          curl -L https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz > jmeter.tgz
+          curl -L https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz -o jmeter.tgz
           tar -xzf jmeter.tgz
           mv apache-jmeter-5.6.3 jmeter
 
-      - name: Install JMeter WebDriver Plugin & Dependencies
+      - name: Install JMeter WebDriver Plugin & Selenium Dependencies
         run: |
           mkdir -p jmeter/lib/ext
           mkdir -p jmeter/lib
 
-          # WebDriver Plugin
+          # JMeter WebDriver plugin JAR
           curl -L -o jmeter/lib/ext/jpgc-webdriver-2.0.jar https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-webdriver/2.0/jmeter-plugins-webdriver-2.0.jar
 
-          # Selenium Dependencies
-          curl -L -o jmeter/lib/selenium-java-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-java/3.141.59/selenium-java-3.141.59.jar
-          curl -L -o jmeter/lib/selenium-api-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-api/3.141.59/selenium-api-3.141.59.jar
-          curl -L -o jmeter/lib/selenium-support-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-support/3.141.59/selenium-support-3.141.59.jar
-          curl -L -o jmeter/lib/selenium-chrome-driver-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-chrome-driver/3.141.59/selenium-chrome-driver-3.141.59.jar
-          curl -L -o jmeter/lib/selenium-remote-driver-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-remote-driver/3.141.59/selenium-remote-driver-3.141.59.jar
+          # Selenium standalone JAR (includes all required classes)
           curl -L -o jmeter/lib/selenium-server-standalone-3.141.59.jar https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-server-standalone/3.141.59/selenium-server-standalone-3.141.59.jar
 
       - name: Run JMeter Test Plan

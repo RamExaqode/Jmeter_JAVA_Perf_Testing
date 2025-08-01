@@ -16,10 +16,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Java 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 11
@@ -39,18 +39,17 @@ jobs:
           mv "$JMETER_DIR" jmeter
           chmod +x jmeter/bin/jmeter
 
-      - name: Install WebDriver Plugin (Optional)
+      - name: (Optional) Install WebDriver Plugin
         run: |
           curl -O https://jmeter-plugins.org/files/packages/jpgc-webdriver-2.0.zip
           unzip -o jpgc-webdriver-2.0.zip -d jmeter
-          echo "Installed WebDriver plugin"
 
-      - name: Run JMeter Test Plan
+      - name: Run JMeter Test
         run: |
-          ./jmeter/bin/jmeter -n -t ./C/JMeter/tests/TestPlan.jmx -l results.jtl -e -o report
+          ./jmeter/bin/jmeter -n -t "./C/JMeter/tests/TestPlan.jmx" -l results.jtl -e -o report
 
-      - name: Upload HTML Report
-        uses: actions/upload-artifact@v3
+      - name: Upload JMeter HTML Report
+        uses: actions/upload-artifact@v4
         with:
           name: jmeter-html-report
           path: report

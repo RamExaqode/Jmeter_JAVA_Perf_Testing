@@ -58,8 +58,8 @@ jobs:
       with:
         server_address: smtp.gmail.com
         server_port: 587
-        username: ${{ secrets.GMAIL_USERNAME }}
-        password: ${{ secrets.GMAIL_APP_PASSWORD }}
+        username: ${{ secrets.EMAIL_USER }}
+        password: ${{ secrets.EMAIL_PASS }}
         from: 'ram.marshivane@exaqode.com'
         to: 'rammarshivane@gmail.com,ram.marshivane@exaqode.com'
         subject: 'JMeter Test Execution Report (CSV)'

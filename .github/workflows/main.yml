@@ -2,8 +2,7 @@ name: Run JMeter Tests
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
 
 jobs:
@@ -11,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Set up JDK 11
@@ -20,19 +19,25 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
 
-    - name: Download and Extract JMeter
+    - name: Download and Setup JMeter 5.6.3
       run: |
         curl -L https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz -o jmeter.tgz
         tar -xzf jmeter.tgz
         mv apache-jmeter-5.6.3 jmeter
 
-    - name: Install JMeter Plugins
+    - name: Install Plugin Manager and WebDriver plugin
       run: |
-        curl -L https://jmeter-plugins.org/get/ | bash
-        mkdir -p ~/.jmeter
-        cp -r jmeter/lib ~/.jmeter/
+        mkdir -p jmeter/lib/ext
+        curl -L https://jmeter-plugins.org/files/packages/jpgc-cmdrunner-2.3.jar -o jmeter/lib/ext/jpgc-cmdrunner-2.3.jar
+        curl -L https://jmeter-plugins.org/files/packages/jpgc-pluginmanager-1.7.jar -o jmeter/lib/ext/jpgc-pluginmanager-1.7.jar
 
-    - name: Run JMeter Test Plan (Headless WebDriver)
+        chmod +x jmeter/bin/PluginsManagerCMD.sh
+
+        # Install WebDriver plugin
+        jmeter/bin/PluginsManagerCMD.sh install jpgc-webdriver
+        ls -l jmeter/lib/ext
+
+    - name: Run JMeter Test (Headless)
       run: |
         mkdir -p reports
         ./jmeter/bin/jmeter -n \
@@ -42,7 +47,7 @@ jobs:
       env:
         JVM_ARGS: "-Djmeter.webdriver.chrome.driver.args=--headless --disable-gpu --no-sandbox --disable-dev-shm-usage"
 
-    - name: Upload JMeter Results
+    - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
         name: jmeter-results

@@ -14,24 +14,32 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Download & Extract JMeter
+      - name: Download JMeter
         run: |
           curl -O https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.4.1.tgz
           tar -xzf apache-jmeter-5.4.1.tgz
           mv apache-jmeter-5.4.1 jmeter
 
-      - name: Install JMeter WebDriver Plugin
+      - name: Install JMeter WebDriver Plugin & Dependencies
         run: |
           mkdir -p jmeter/lib/ext
+          mkdir -p jmeter/lib/junit
+
+          # WebDriver plugin
           curl -L -o jmeter/lib/ext/jmeter-plugins-webdriver.jar https://jmeter-plugins.org/downloads/file/JMeterPlugins-WebDriver-1.5.0.jar
 
-      - name: Run JMeter Test
+          # Selenium (required by WebDriver plugin)
+          curl -L -o jmeter/lib/junit/selenium-java-3.141.59.zip https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-java/3.141.59/selenium-java-3.141.59.zip
+          unzip -q jmeter/lib/junit/selenium-java-3.141.59.zip -d jmeter/lib/junit
+          find jmeter/lib/junit -name "*.jar" -exec cp {} jmeter/lib/ \;
+
+      - name: Run JMeter Test Plan
         run: |
           mkdir -p reports
           ./jmeter/bin/jmeter -n -t tests/TestPlan.jmx -l reports/results.jtl -j reports/jmeter.log
 
-      - name: Upload Results
+      - name: Upload JMeter Reports
         uses: actions/upload-artifact@v4
         with:
-          name: jmeter-results
+          name: jmeter-reports
           path: reports
